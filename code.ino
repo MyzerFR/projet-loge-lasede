@@ -1,5 +1,4 @@
 #include <EEPROM.h>
-
 #include <Keypad.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -7,25 +6,27 @@
 LiquidCrystal_I2C lcd(0x26, 16, 2);
 
 // Définition du clavier matriciel
-#define ROWS 4
-#define COLS 4
-const char kp4x4Keys[ROWS][COLS]  = {{'1', '2', '3', 'A'}, {'4', '5', '6', 'B'}, {'7', '8', '9', 'C'}, {'*', '0', '#', 'D'}};
+constexpr byte ROWS = 4, COLS = 4;
+const char kp4x4Keys[ROWS][COLS] = {
+    {'1', '2', '3', 'A'},
+    {'4', '5', '6', 'B'},
+    {'7', '8', '9', 'C'},
+    {'*', '0', '#', 'D'}
+};
 byte rowKp4x4Pin[ROWS] = {9, 8, 7, 6};
 byte colKp4x4Pin[COLS] = {5, 4, 3, 2};
 Keypad keypad = Keypad(makeKeymap(kp4x4Keys), rowKp4x4Pin, colKp4x4Pin, ROWS, COLS);
 
 // Définition des LEDs
-const int led_rouge = 11;
-const int led_verte = 12;
+constexpr int led_rouge = 11, led_verte = 12;
 
-// Variables pour le code
-char code[5];
-const char code_admin[4] = {'2', '4', '0', '9'};
-const char code_Gayri[4] = {'8', '6', '2', '4'};
-const char code_Jourdes[4] = {'2', '4', '8', '6'};
-const char code_Lyoko[4] = {'0', '9', '1', '1'};
+// Codes d'accès
+constexpr const char* codes[] = {"2409", "8624", "2486", "0911"};
+constexpr int code_length = 4;
+
+// Variables
+char code_saisi[code_length + 1] = {0};  // +1 pour le caractère nul '\0'
 int compteur = 0;
-int col = 0;
 
 void setup() {
     // Initialisation du LCD
@@ -40,36 +41,43 @@ void setup() {
 
 void loop() {
     lcd.setCursor(0, 0);
-    lcd.print("Entrez le code : ");
+    lcd.print("Entrez le code: ");
+    
     char customKey = keypad.getKey();
     if (customKey) {
-        lcd.setCursor(col, 1);
-        lcd.print("X");
-        col++;
-        code[compteur] = customKey;
-        compteur++;
-
         if (customKey == 'A') { // Réinitialisation
-            compteur = 0;
-            col = 0;
-            lcd.clear();
+            resetInput();
+            return;
         }
 
-        if (compteur == 4) { // Vérification du code
-            if ((memcmp(code, code_admin, 4) == 0) || (memcmp(code, code_Gayri, 4) == 0) || (memcmp(code, code_Jourdes, 4) == 0) || (memcmp(code, code_Lyoko, 4) == 0)) {
-                lcd.setCursor(4, 1);
-                lcd.print(" ");
-                lcd.setCursor(6, 1);
-                lcd.print("Bonjour");
-                delay(5000);
-            } else {
-                lcd.setCursor(6, 1);
-                lcd.print("Code refusé");
-                delay(2000);
+        if (compteur < code_length) {
+            lcd.setCursor(compteur, 1);
+            lcd.print('X');  // Affichage masqué du code
+            code_saisi[compteur++] = customKey;
+        }
+
+        if (compteur == code_length) { // Vérification du code
+            code_saisi[code_length] = '\0'; // Ajout du caractère nul
+            bool code_valide = false;
+
+            for (const char* code : codes) {
+                if (strcmp(code_saisi, code) == 0) {
+                    code_valide = true;
+                    break;
+                }
             }
-            compteur = 0;
-            col = 0;
-            lcd.clear();
+
+            lcd.setCursor(0, 1);
+            lcd.print(code_valide ? "Accès autorisé" : "Code refusé");
+            delay(code_valide ? 5000 : 2000);
+
+            resetInput();
         }
     }
+}
+
+void resetInput() {
+    memset(code_saisi, 0, sizeof(code_saisi)); // Réinitialisation du buffer
+    compteur = 0;
+    lcd.clear();
 }
