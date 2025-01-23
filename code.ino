@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #include <Keypad.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -21,6 +23,7 @@ char code[5];
 const char code_admin[4] = {'2', '4', '0', '9'};
 const char code_Gayri[4] = {'8', '6', '2', '4'};
 const char code_Jourdes[4] = {'2', '4', '8', '6'};
+const char code_Lyoko[4] = {'0', '9', '1', '1'};
 int compteur = 0;
 int col = 0;
 
@@ -53,14 +56,14 @@ void loop() {
         }
 
         if (compteur == 4) { // Vérification du code
-            if ((memcmp(code, code_admin, 4) == 0) || (memcmp(code, code_Gayri, 4) == 0) || (memcmp(code, code_Jourdes, 4) == 0)) {
+            if ((memcmp(code, code_admin, 4) == 0) || (memcmp(code, code_Gayri, 4) == 0) || (memcmp(code, code_Jourdes, 4) == 0) || (memcmp(code, code_Lyoko, 4) == 0)) {
                 lcd.setCursor(4, 1);
                 lcd.print(" ");
                 lcd.setCursor(6, 1);
                 lcd.print("Bonjour");
                 delay(5000);
             } else {
-                lcd.setCursor(5, 1);
+                lcd.setCursor(6, 1);
                 lcd.print("Code refusé");
                 delay(2000);
             }
