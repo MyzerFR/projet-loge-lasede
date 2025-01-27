@@ -3,7 +3,7 @@
 #include <LiquidCrystal_I2C.h>
 
 // Définition de l'écran LCD
-LiquidCrystal_I2C lcd(0x26, 16, 2);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // Définition du clavier matriciel
 constexpr byte ROWS = 4, COLS = 4;
